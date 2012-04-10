@@ -120,7 +120,7 @@ echo "$app_js_content" >> "$project_name"/_/javascripts/_app/app.js
 # get javascripts dependencies
 # -----------------------------------
 curl -L http://code.jquery.com/jquery.min.js > "$project_name"/_/javascripts/_vendors/core/jquery.js
-curl -L http://www.json.org/json2.js > "$project_name"/_/javascripts/_vendors/core/json2.js
+curl -L https://github.com/douglascrockford/JSON-js/blob/master/json2.js > "$project_name"/_/javascripts/_vendors/core/json2.js
 curl -L http://documentcloud.github.com/underscore/underscore-min.js > "$project_name"/_/javascripts/_vendors/core/underscore.js
 curl -L http://documentcloud.github.com/backbone/backbone-min.js > "$project_name"/_/javascripts/_vendors/core/backbone.js
 
