@@ -78,8 +78,9 @@ EOF
 # get javascripts dependencies
 # -----------------------------------
 
+curl -L http://www.modernizr.com/downloads/modernizr-latest.js > _/javascripts/_vendors/core/modernizr.js
 curl -L http://code.jquery.com/jquery.min.js > _/javascripts/_vendors/core/jquery.js
-curl -L https://github.com/douglascrockford/JSON-js/blob/master/json2.js > _/javascripts/_vendors/core/json2.js
+curl -L https://raw.github.com/douglascrockford/JSON-js/master/json2.js > _/javascripts/_vendors/core/json2.js
 curl -L http://documentcloud.github.com/underscore/underscore-min.js > _/javascripts/_vendors/core/underscore.js
 curl -L http://documentcloud.github.com/backbone/backbone-min.js > _/javascripts/_vendors/core/backbone.js
 
