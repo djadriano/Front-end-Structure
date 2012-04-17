@@ -16,8 +16,15 @@ EOF
 if [[ -z "$2" ]]
 then
 	echo "error: missing arguments"
-	echo "usage: $0 project-directory project-namespace"
+	echo "usage: $0 project-directory project-namespace [ruby-version]"
 	exit 1
+fi
+
+if [[ ! -z "$3" ]]
+then
+	ruby_version="$3"
+else
+	ruby_version=$(rvm current)
 fi
 
 project_directory="$1"
@@ -206,7 +213,7 @@ EOF
 # -----------------------------------
 
 cat > .rvmrc << EOF
-rvm use 1.9.2@$project_name
+rvm use $ruby_version@$project_name
 EOF
 
 # -----------------------------------
@@ -229,5 +236,5 @@ rvm gemset create $project_name
 popd &>/dev/null
 
 echo "$project_name created successfully!"
-echo "created in $project_directory"
+echo "created in $project_directory using ruby version $ruby_version"
 
