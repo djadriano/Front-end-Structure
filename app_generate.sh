@@ -1,22 +1,66 @@
+#!/bin/bash
+
+cat >> /dev/stdout << EOF
 # -----------------------------------
 # create front-end structure
 # By Adriano Fernandes
 # twitter.com/djadriano
 # djadrianof@gmail.com
 # -----------------------------------
-  
-# -----------------------------------
-#get parameters
-# -----------------------------------
-project_name="$1";
-namespace_name="$2";
+EOF
 
 # -----------------------------------
-# app.js content
+# get parameters
 # -----------------------------------
-app_js_content=";(function(global) {
 
-global."$namespace_name" = {
+if [[ -z "$2" ]]
+then
+	echo "error: missing arguments"
+	echo "usage: $0 project-directory project-namespace"
+	exit 1
+fi
+
+project_directory="$1"
+project_name=$(sed -e 's#.*/##' <<< "$project_directory")
+
+project_namespace="$2"
+
+# -----------------------------------
+# replace spaces with underscores
+# -----------------------------------
+
+project_name=$(tr -s ' ' '_' <<< $project_name)
+project_namespace=$(tr -s ' ' '_' <<< $project_namespace)
+
+# -----------------------------------
+# create directories
+# -----------------------------------
+
+if [[ -d "$project_directory" ]]
+then
+	echo "error: $project_directory already exists."
+	exit 1
+fi
+
+mkdir -p "$project_directory"
+if (( $? == 1 ))
+then
+	echo "error: could not create $project_directory"
+	exit 1
+fi
+
+pushd "$project_directory" &>/dev/null
+
+mkdir -p {config,_/{images,javascripts/{_app/{models,views,collections,routers},_vendors/{core,plugins}},stylesheets/{core,pages,shared,vendors}}};
+
+# -----------------------------------
+# create app.js
+# -----------------------------------
+
+cat > _/javascripts/_app/app.js << EOF
+;(function(global) {
+
+global.$project_namespace = {
   Models      : {},
   Views       : {},
   Collections : {},
@@ -27,12 +71,24 @@ global."$namespace_name" = {
 
 \$(function() {
 // START YOUR PROJECT HERE
-})";
+})
+EOF
 
 # -----------------------------------
-# main.scss content
+# get javascripts dependencies
 # -----------------------------------
-main_scss_content="@import 'compass';
+
+curl -L http://code.jquery.com/jquery.min.js > _/javascripts/_vendors/core/jquery.js
+curl -L https://github.com/douglascrockford/JSON-js/blob/master/json2.js > _/javascripts/_vendors/core/json2.js
+curl -L http://documentcloud.github.com/underscore/underscore-min.js > _/javascripts/_vendors/core/underscore.js
+curl -L http://documentcloud.github.com/backbone/backbone-min.js > _/javascripts/_vendors/core/backbone.js
+
+# -----------------------------------
+# create main.scss
+# -----------------------------------
+
+cat > _/stylesheets/main.scss << EOF
+@import 'compass';
 
 // ----------------------------------
 // core
@@ -55,20 +111,50 @@ main_scss_content="@import 'compass';
 
 // ----------------------------------
 // pages
-// -----------------------------------";
+// -----------------------------------
+EOF
 
 # -----------------------------------
-# reset.scss
+# create reset.scss
 # -----------------------------------
-reset_scss_content="@import 'compass/reset';
+
+cat > _/stylesheets/core/_reset.scss << EOF
+@import 'compass/reset';
 @import 'compass/reset/utilities';
 
-@include global-reset;";
+@include global-reset;
+EOF
 
 # -----------------------------------
-# grid.scss
+# create colors.scss
 # -----------------------------------
-grid_scss_content="@import 'susy';
+
+touch _/stylesheets/core/_colors.scss
+
+# -----------------------------------
+# create forms.scss
+# -----------------------------------
+
+touch _/stylesheets/core/_forms.scss
+
+# -----------------------------------
+# create headings.scss
+# -----------------------------------
+
+touch _/stylesheets/core/_headings.scss
+
+# -----------------------------------
+# create typography.scss
+# -----------------------------------
+
+touch _/stylesheets/core/_typography.scss
+
+# -----------------------------------
+# create grid.scss
+# -----------------------------------
+
+cat > _/stylesheets/core/_grid.scss << EOF
+@import 'susy';
 
 // Grid ----------------------------------------------------------------------
 
@@ -77,121 +163,70 @@ grid_scss_content="@import 'susy';
 \$gutter-width           : 1em;
 \$side-gutter-width      : \$gutter-width;
 
-\$show-grid-backgrounds  : true;";
+\$show-grid-backgrounds  : true;
+EOF
 
 # -----------------------------------
-# index.html
+# create structure.scss
 # -----------------------------------
-index_html_content="<!DOCTYPE html>
+
+touch _/stylesheets/shared/_structure.scss
+
+# -----------------------------------
+# create index.html
+# -----------------------------------
+
+cat > index.html << EOF
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<meta charset="utf-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Page Title</title>
 </head>
 <body>
 
 </body>
-</html>";
+</html>
+EOF
 
 # -----------------------------------
-# Gemfile
+# create Gemfile
 # -----------------------------------
-gemfile_content="source 'http://rubygems.org'
+
+cat > Gemfile << EOF
+source 'http://rubygems.org'
 
 gem 'compass', '0.11.1'
-gem 'compass-susy-plugin', '0.9'";
+gem 'compass-susy-plugin', '0.9'
+EOF
 
 # -----------------------------------
-# .rvmrc
+# create .rvmrc
 # -----------------------------------
-rvmrc_content="rvm use 1.9.2@"$project_name"";
 
-# -----------------------------------
-# create structure folders
-# -----------------------------------
-mkdir -p "$project_name"/{config,_/{images,javascripts/{_app/{models,views,collections,routers},_vendors/{core,plugins}},stylesheets/{core,pages,shared,vendors}}};
-
-# -----------------------------------
-#create app.js
-# -----------------------------------
-echo "$app_js_content" >> "$project_name"/_/javascripts/_app/app.js
-
-# -----------------------------------
-# get javascripts dependencies
-# -----------------------------------
-curl -L http://code.jquery.com/jquery.min.js > "$project_name"/_/javascripts/_vendors/core/jquery.js
-curl -L https://github.com/douglascrockford/JSON-js/blob/master/json2.js > "$project_name"/_/javascripts/_vendors/core/json2.js
-curl -L http://documentcloud.github.com/underscore/underscore-min.js > "$project_name"/_/javascripts/_vendors/core/underscore.js
-curl -L http://documentcloud.github.com/backbone/backbone-min.js > "$project_name"/_/javascripts/_vendors/core/backbone.js
-
-# -----------------------------------
-#create main.scss
-# -----------------------------------
-echo "$main_scss_content" >> "$project_name"/_/stylesheets/main.scss
-
-# -----------------------------------
-#create reset.scss
-# -----------------------------------
-echo "$reset_scss_content" >> "$project_name"/_/stylesheets/core/_reset.scss
-
-# -----------------------------------
-#create colors.scss
-# -----------------------------------
-touch "$project_name"/_/stylesheets/core/_colors.scss
-
-# -----------------------------------
-#create forms.scss
-# -----------------------------------
-touch "$project_name"/_/stylesheets/core/_forms.scss
-
-# -----------------------------------
-#create headings.scss
-# -----------------------------------
-touch "$project_name"/_/stylesheets/core/_headings.scss
-
-# -----------------------------------
-#create typography.scss
-# -----------------------------------
-touch "$project_name"/_/stylesheets/core/_typography.scss
-
-# -----------------------------------
-#create grid.scss
-# -----------------------------------
-echo "$grid_scss_content" >> "$project_name"/_/stylesheets/core/_grid.scss
-
-# -----------------------------------
-#create structure.scss
-# -----------------------------------
-touch "$project_name"/_/stylesheets/shared/_structure.scss
-
-# -----------------------------------
-#create index.html
-# -----------------------------------
-echo "$index_html_content" >> "$project_name"/index.html
-
-# -----------------------------------
-#create Gemfile
-# -----------------------------------
-echo "$gemfile_content" >> "$project_name"/Gemfile
-
-# -----------------------------------
-#create .rvmrc
-# -----------------------------------
-echo "$rvmrc_content" >> "$project_name"/.rvmrc
-
-# -----------------------------------
-# enter in project structure
-# -----------------------------------
-cd "$project_name"
+cat > .rvmrc << EOF
+rvm use 1.9.2@$project_name
+EOF
 
 # -----------------------------------
 # create compass config
 # -----------------------------------
+
+bundle install
 compass config -r susy
 
 # -----------------------------------
-#create gemset with project name
+# create gemset with project name
 # -----------------------------------
+
 rvm gemset create $project_name
 
-echo 'project folders created successful!'
+# -----------------------------------
+# done!
+# -----------------------------------
+
+popd &>/dev/null
+
+echo "$project_name created successfully!"
+echo "created in $project_directory"
+
